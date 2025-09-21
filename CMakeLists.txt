@@ -5,13 +5,13 @@ set (CMAKE_CXX_STANDARD_REQUIRED true)
 
 
 if (NOT DEFINED PACKAGE_VERSION)
-    message ("-- [CMake Project] WARNING: Package version is not defined, set as 0.0.0")
+    message ("-- [Linux Environment Advanced Programming] WARNING: Package version is not defined, set as 0.0.0")
     set (PACKAGE_VERSION "0.0.0")
 endif ()
 
-message ("-- [CMake Project] Package version: ${PACKAGE_VERSION}")
+message ("-- [Linux Environment Advanced Programming] Package version: ${PACKAGE_VERSION}")
 
-project ("CMake Project"
+project ("Linux Environment Advanced Programming"
     VERSION ${PACKAGE_VERSION}
     DESCRIPTION "C/C++ 项目的 CMake 模板。"
 )
@@ -29,10 +29,10 @@ if (NOT with_gtest)
 endif ()
 
 if (WITH_GTEST)
-    message ("-- [CMake Project] Unit test by GoogleTest is enabled")
+    message ("-- [Linux Environment Advanced Programming] Unit test by GoogleTest is enabled")
 
 else ()
-    message ("-- [CMake Project] Unit test by GoogleTest is disabled")
+    message ("-- [Linux Environment Advanced Programming] Unit test by GoogleTest is disabled")
 
 endif ()
 
@@ -68,7 +68,7 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDI
 
 # configure targets
 aux_source_directory (${DIR_SRC_ROOT} PROJECT_SOURCE_FILES)
-add_library (cmake-project ${PROJECT_SOURCE_FILES})
+add_library (linux-environment-advanced-programming ${PROJECT_SOURCE_FILES})
 
 unset (CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 unset (CMAKE_LIBRARY_OUTPUT_DIRECTORY)
@@ -92,13 +92,13 @@ if (INSTALL_IN_PLACE)
 
 endif ()
 
-message ("-- [CMake Project] Install destination would be: ${CMAKE_INSTALL_PREFIX}")
+message ("-- [Linux Environment Advanced Programming] Install destination would be: ${CMAKE_INSTALL_PREFIX}")
 
 
 include (public-headers.cmake)
-set_target_properties (cmake-project PROPERTIES PUBLIC_HEADER ${CMAKE_PROJECT_PUBLIC_HEADERS})
+set_target_properties (linux-environment-advanced-programming PROPERTIES PUBLIC_HEADER ${CMAKE_PROJECT_PUBLIC_HEADERS})
 
-install (TARGETS cmake-project
+install (TARGETS linux-environment-advanced-programming
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

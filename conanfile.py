@@ -3,12 +3,12 @@ from conan.tools.cmake import cmake_layout, CMakeToolchain
 
 
 class ExampleRecipe(ConanFile):
-    name = "cmake-project"
-    version = "1.1.1"
-    description = "C/C++ 项目的 CMake 模板。"
+    name = "linux-environment-advanced-programming"
+    version = "0.0.0"
+    description = "Linux 环境高级编程的课程作业。"
     languages = "C++"
     author = "DavidingPlus"
-    homepage = "https://github.com/DavidingPlus/cmake-project-template"
+    homepage = "https://github.com/DavidingPlus/linux-environment-advanced-programming-template"
 
     settings = "os", "compiler", "build_type", "arch"
     generators = "CMakeDeps"
@@ -29,7 +29,7 @@ class ExampleRecipe(ConanFile):
 
     def generate(self):
         tc = CMakeToolchain(self)
-        tc.presets_prefix = "cmake-project"
+        tc.presets_prefix = "linux-environment-advanced-programming"
         tc.cache_variables["PACKAGE_VERSION"] = self.version
         tc.cache_variables["with_gtest"] = self.options.with_gtest
         tc.generate()

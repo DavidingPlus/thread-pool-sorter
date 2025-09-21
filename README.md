@@ -1,4 +1,4 @@
-# cmake-project-template
+# linux-environment-advanced-programming-template
 
-C/C++ 项目的 CMake 模板。
+Linux 环境高级编程的课程作业。
 
