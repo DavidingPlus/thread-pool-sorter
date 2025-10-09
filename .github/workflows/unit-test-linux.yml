@@ -40,4 +40,4 @@ jobs:
 
         cmake --build --preset thread-pool-sorter-release -t tests
 
-        ./build/Release/test/gtest-testrun
+        ./build/Release/test/gtest-thread-pool-sorter
