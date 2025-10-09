@@ -28,16 +28,16 @@ jobs:
 
         conan install . --build=missing
 
-        cmake --preset linux-environment-advanced-programming-release -DWITH_GTEST=ON
+        cmake --preset thread-pool-sorter-release -DWITH_GTEST=ON
 
     - name: Build Targets
       working-directory: ${{github.workspace}}
-      run: cmake --build --preset linux-environment-advanced-programming-release
+      run: cmake --build --preset thread-pool-sorter-release
 
     - name: Run Unit Test
       working-directory: ${{github.workspace}}
       run: |
 
-        cmake --build --preset linux-environment-advanced-programming-release -t tests
+        cmake --build --preset thread-pool-sorter-release -t tests
 
         ./build/Release/test/gtest-testrun

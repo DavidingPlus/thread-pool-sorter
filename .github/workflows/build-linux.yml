@@ -29,17 +29,17 @@ jobs:
 
         conan install . --build=missing
 
-        cmake --preset linux-environment-advanced-programming-release
+        cmake --preset thread-pool-sorter-release
 
     - name: Build Targets
       working-directory: ${{github.workspace}}
-      run: cmake --build --preset linux-environment-advanced-programming-release
+      run: cmake --build --preset thread-pool-sorter-release
 
     - name: Install Targets
       working-directory: ${{github.workspace}}
       run: |
 
-        cmake --build --preset linux-environment-advanced-programming-release -t install
+        cmake --build --preset thread-pool-sorter-release -t install
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4

@@ -68,7 +68,7 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDI
 
 # configure targets
 aux_source_directory (${DIR_SRC_ROOT} PROJECT_SOURCE_FILES)
-add_library (linux-environment-advanced-programming ${PROJECT_SOURCE_FILES})
+add_library (thread-pool-sorter ${PROJECT_SOURCE_FILES})
 
 unset (CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 unset (CMAKE_LIBRARY_OUTPUT_DIRECTORY)
@@ -96,9 +96,9 @@ message ("-- [Linux Environment Advanced Programming] Install destination would 
 
 
 include (public-headers.cmake)
-set_target_properties (linux-environment-advanced-programming PROPERTIES PUBLIC_HEADER ${CMAKE_PROJECT_PUBLIC_HEADERS})
+set_target_properties (thread-pool-sorter PROPERTIES PUBLIC_HEADER ${CMAKE_PROJECT_PUBLIC_HEADERS})
 
-install (TARGETS linux-environment-advanced-programming
+install (TARGETS thread-pool-sorter
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
