@@ -5,13 +5,13 @@ set (CMAKE_CXX_STANDARD_REQUIRED true)
 
 
 if (NOT DEFINED PACKAGE_VERSION)
-    message ("-- [Linux Environment Advanced Programming] WARNING: Package version is not defined, set as 0.0.0")
+    message ("-- [Thread Pool Sorter] WARNING: Package version is not defined, set as 0.0.0")
     set (PACKAGE_VERSION "0.0.0")
 endif ()
 
-message ("-- [Linux Environment Advanced Programming] Package version: ${PACKAGE_VERSION}")
+message ("-- [Thread Pool Sorter] Package version: ${PACKAGE_VERSION}")
 
-project ("Linux Environment Advanced Programming"
+project ("Thread Pool Sorter"
     VERSION ${PACKAGE_VERSION}
     DESCRIPTION "C/C++ 项目的 CMake 模板。"
 )
@@ -29,10 +29,10 @@ if (NOT with_gtest)
 endif ()
 
 if (WITH_GTEST)
-    message ("-- [Linux Environment Advanced Programming] Unit test by GoogleTest is enabled")
+    message ("-- [Thread Pool Sorter] Unit test by GoogleTest is enabled")
 
 else ()
-    message ("-- [Linux Environment Advanced Programming] Unit test by GoogleTest is disabled")
+    message ("-- [Thread Pool Sorter] Unit test by GoogleTest is disabled")
 
 endif ()
 
@@ -92,7 +92,7 @@ if (INSTALL_IN_PLACE)
 
 endif ()
 
-message ("-- [Linux Environment Advanced Programming] Install destination would be: ${CMAKE_INSTALL_PREFIX}")
+message ("-- [Thread Pool Sorter] Install destination would be: ${CMAKE_INSTALL_PREFIX}")
 
 
 include (public-headers.cmake)

@@ -8,4 +8,4 @@ add_custom_target (tests)
 add_dependencies (tests gtest-testrun)
 
 
-message ("-- [Linux Environment Advanced Programming] Done configuring gtest")
+message ("-- [Thread Pool Sorter] Done configuring gtest")

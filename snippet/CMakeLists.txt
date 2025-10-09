@@ -15,9 +15,9 @@ endforeach()
 
 # Run add_subdirectory() for each
 foreach (SUB_DIR ${SUB_DIRS})
-    message ("-- [Linux Environment Advanced Programming] Building snippet: ${SUB_DIR}")
+    message ("-- [Thread Pool Sorter] Building snippet: ${SUB_DIR}")
     add_subdirectory (${SUB_DIR})
 
 endforeach()
 
-message ("-- [Linux Environment Advanced Programming] Done configuring snippets")
+message ("-- [Thread Pool Sorter] Done configuring snippets")
