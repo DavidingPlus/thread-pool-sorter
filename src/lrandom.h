@@ -10,6 +10,8 @@
 #ifndef _LRANDOM_H_
 #define _LRANDOM_H_
 
+#include <vector>
+
 
 class LRandom
 {
@@ -21,6 +23,8 @@ public:
     ~LRandom() = default;
 
     static int genRandomNumber(int left, int right);
+
+    static std::vector<int> genRandomVector(int left, int right, int size);
 };
 
 

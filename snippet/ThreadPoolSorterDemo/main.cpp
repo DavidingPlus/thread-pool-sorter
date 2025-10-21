@@ -13,7 +13,9 @@
 #include "lrandom.h"
 
 
-constexpr int num = 5000;
+constexpr int size = 50000;
+constexpr int left = 0;
+constexpr int right = 1000000;
 
 
 /**
@@ -103,25 +105,21 @@ static void parallelMergeSort(std::vector<int> &arr, int left, int right, LThrea
 int main()
 {
     // 1. 生成 num 个测试数据。
-    std::vector<int> data(num);
+    std::vector<int> data = LRandom::genRandomVector(left, right, size);
 
     std::cout << "Before sorting:\n";
-    for (int i = 0; i < num; ++i)
-    {
-        data[i] = LRandom::genRandomNumber(0, 1000000);
-        std::cout << data[i] << ' ';
-    }
+    for (int i = 0; i < size; ++i) std::cout << data[i] << ' ';
     std::cout << std::endl;
 
     // 2. 创建线程池（例如 8 个线程）。
     LThreadPool pool(8);
 
     // 3. 启动并行归并排序。
-    parallelMergeSort(data, 0, num - 1, pool);
+    parallelMergeSort(data, 0, size - 1, pool);
 
     // 4. 输出排序结果。
     std::cout << "After sorting:\n";
-    for (int e : data) std::cout << e << ' ';
+    for (int &e : data) std::cout << e << ' ';
     std::cout << std::endl;
 
 
