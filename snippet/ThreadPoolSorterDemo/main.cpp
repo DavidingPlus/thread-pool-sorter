@@ -1,21 +1,26 @@
 /**
  * @file main.cpp
- * @author DavidingPlus
+ * @author DavidingPlus (davidingplus@qq.com)
  * @brief 线程池排序主程序入口文件。
+ *
+ * Copyright (c) 2025 电子科技大学 刘治学
+ *
  */
-
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <future>
+#include <chrono>
+#include <fstream>
 
 #include "lthreadpool.h"
 #include "lrandom.h"
 
 
-constexpr int size = 50000;
+constexpr int size = 5000000;
 constexpr int left = 0;
 constexpr int right = 1000000;
+constexpr int poolSize = 12;
 
 
 /**
@@ -105,22 +110,34 @@ static void parallelMergeSort(std::vector<int> &arr, int left, int right, LThrea
 int main()
 {
     // 1. 生成 num 个测试数据。
-    std::vector<int> data = LRandom::genRandomVector(left, right, size);
+    auto before = std::chrono::high_resolution_clock::now();
+    std::vector<int> vec = LRandom::genRandomVector(left, right, size);
+    auto now = std::chrono::high_resolution_clock::now();
 
-    std::cout << "Before sorting:\n";
-    for (int i = 0; i < size; ++i) std::cout << data[i] << ' ';
-    std::cout << std::endl;
+    std::cout << "Random vec generated in "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(now - before).count()
+              << " ms.\n";
 
-    // 2. 创建线程池（例如 8 个线程）。
-    LThreadPool pool(8);
+    std::ofstream beforeFile("before.txt");
+    for (auto &e : vec) beforeFile << e << ' ';
+    beforeFile.close();
+
+    // 2. 创建线程池。
+    LThreadPool pool(poolSize);
 
     // 3. 启动并行归并排序。
-    parallelMergeSort(data, 0, size - 1, pool);
+    before = std::chrono::high_resolution_clock::now();
+    parallelMergeSort(vec, 0, size - 1, pool);
+    now = std::chrono::high_resolution_clock::now();
 
-    // 4. 输出排序结果。
-    std::cout << "After sorting:\n";
-    for (int &e : data) std::cout << e << ' ';
-    std::cout << std::endl;
+    std::cout << "Parallel merge sort completed in "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(now - before).count()
+              << " ms.\n";
+
+    // 4. 输出排序结果到文件。
+    std::ofstream afterFile("after.txt");
+    for (auto &e : vec) afterFile << e << ' ';
+    afterFile.close();
 
 
     return 0;
