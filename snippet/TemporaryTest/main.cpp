@@ -1,6 +1,12 @@
 #include <iostream>
 #include <thread>
 
+#if __unix__
+
+#include <unistd.h>
+
+#endif
+
 
 void doIt()
 {
