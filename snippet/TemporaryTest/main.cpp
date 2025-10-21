@@ -1,8 +1,6 @@
 #include <iostream>
 #include <thread>
 
-#include <unistd.h>
-
 
 void doIt()
 {
