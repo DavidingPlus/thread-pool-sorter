@@ -12,30 +12,19 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <chrono>
 #include <queue>
 #include <future>
+#include <chrono>
+#include <cmath>
+#include <cstdio>
 
 #include "lthreadpool.h"
 #include "lrandom.h"
 
 
-// 每个块的大小，测试用 1MB
-constexpr size_t CHUNK_SIZE = 1ULL * 1024 * 1024;
+constexpr size_t CHUNK_SIZE = 16ULL * 1024 * 1024; // 16 MB
+constexpr size_t K = 8;                            // k 路归并，每轮并行合并多少个文件
 
-
-// ---------------------------
-// 读取文件块
-// ---------------------------
-std::vector<int> readChunk(const std::string &file, size_t offset, size_t count)
-{
-    std::ifstream ifs(file, std::ios::binary);
-    ifs.seekg(offset);
-    std::vector<int> buffer(count);
-    ifs.read(reinterpret_cast<char *>(buffer.data()), count * sizeof(int));
-    buffer.resize(ifs.gcount() / sizeof(int));
-    return buffer;
-}
 
 // ---------------------------
 // 写排序后的块
@@ -49,14 +38,17 @@ std::string writeSortedChunk(const std::string &file, size_t idx, const std::vec
 }
 
 // ---------------------------
-// 多路归并
+// k 路归并
 // ---------------------------
-void mergeFiles(const std::vector<std::string> &files, const std::string &outputFile)
+std::string mergeKFiles(const std::vector<std::string> &files, size_t idx)
 {
+    if (files.empty()) return "";
+    if (files.size() == 1) return files[0];
+
     struct Node
     {
         int val;
-        size_t idx;
+        size_t fileIdx;
         bool operator>(const Node &other) const { return val > other.val; }
     };
 
@@ -65,6 +57,8 @@ void mergeFiles(const std::vector<std::string> &files, const std::string &output
         streams[i].open(files[i], std::ios::binary);
 
     std::priority_queue<Node, std::vector<Node>, std::greater<Node>> pq;
+
+    // 初始化堆
     for (size_t i = 0; i < streams.size(); ++i)
     {
         int v;
@@ -72,7 +66,9 @@ void mergeFiles(const std::vector<std::string> &files, const std::string &output
             pq.push({v, i});
     }
 
-    std::ofstream ofs(outputFile, std::ios::binary);
+    std::string outFile = "tmp_merge_" + std::to_string(idx) + ".bin";
+    std::ofstream ofs(outFile, std::ios::binary);
+
     while (!pq.empty())
     {
         Node node = pq.top();
@@ -80,13 +76,19 @@ void mergeFiles(const std::vector<std::string> &files, const std::string &output
         ofs.write(reinterpret_cast<char *>(&node.val), sizeof(node.val));
 
         int v;
-        if (streams[node.idx].read(reinterpret_cast<char *>(&v), sizeof(v)))
-            pq.push({v, node.idx});
+        if (streams[node.fileIdx].read(reinterpret_cast<char *>(&v), sizeof(v)))
+            pq.push({v, node.fileIdx});
     }
+
+    // 关闭并删除源文件
+    for (auto &s : streams) s.close();
+    for (const auto &f : files) std::remove(f.c_str());
+
+    return outFile;
 }
 
 // ---------------------------
-// 外部排序单文件
+// 外部排序
 // ---------------------------
 void externalSort(const std::string &file, LThreadPool &pool)
 {
@@ -97,7 +99,7 @@ void externalSort(const std::string &file, LThreadPool &pool)
     size_t idx = 0;
     std::vector<int> originalData;
 
-    // 输出原始数据（前100个）
+    // 输出原始数据前100个
     int val;
     while (ifs.read(reinterpret_cast<char *>(&val), sizeof(val)) && originalData.size() < 100)
         originalData.push_back(val);
@@ -107,18 +109,15 @@ void externalSort(const std::string &file, LThreadPool &pool)
 
     ifs.clear();
     ifs.seekg(0);
+    auto before = std::chrono::high_resolution_clock::now();
 
-    // 分块排序
+    // 分块排序并行
     while (!ifs.eof())
     {
         std::vector<int> buffer;
         buffer.reserve(CHUNK_SIZE / sizeof(int));
-
-        int val;
         while (buffer.size() < buffer.capacity() && ifs.read(reinterpret_cast<char *>(&val), sizeof(val)))
-        {
             buffer.push_back(val);
-        }
         if (buffer.empty()) break;
 
         futures.push_back(pool.enqueue([buffer = std::move(buffer), file, idx]() mutable
@@ -128,25 +127,54 @@ void externalSort(const std::string &file, LThreadPool &pool)
         ++idx;
     }
 
-    // 等待块排序完成
-    std::vector<std::string> sortedParts;
-    for (auto &f : futures) sortedParts.push_back(f.get());
+    std::vector<std::string> sortedFiles;
+    for (auto &f : futures) sortedFiles.push_back(f.get());
 
-    // 最终排序文件名
-    std::string outputFile = file + ".sorted";
+    // 多轮 k 路归并，每轮并行处理多组 K 个文件
+    size_t mergeRound = 0;
+    while (sortedFiles.size() > 1)
+    {
+        std::vector<std::future<std::string>> mergeFutures;
+        std::vector<std::string> nextRoundFiles;
 
-    // 多路归并
-    mergeFiles(sortedParts, outputFile);
+        for (size_t i = 0; i < sortedFiles.size(); i += K)
+        {
+            std::vector<std::string> group;
+            for (size_t j = i; j < i + K && j < sortedFiles.size(); ++j)
+                group.push_back(sortedFiles[j]);
 
-    // 删除临时块
-    for (auto &p : sortedParts) std::remove(p.c_str());
+            if (group.size() == 1)
+            {
+                nextRoundFiles.push_back(group[0]);
+            }
+            else
+            {
+                mergeFutures.push_back(pool.enqueue([group, mergeRound, i]()
+                                                    { return mergeKFiles(group, mergeRound * 1000 + i); }));
+            }
+        }
 
-    // 输出排序后前 100 个元素
-    std::ifstream sortedFile(outputFile, std::ios::binary);
+        for (auto &mf : mergeFutures)
+            nextRoundFiles.push_back(mf.get());
+
+        sortedFiles = std::move(nextRoundFiles);
+        ++mergeRound;
+    }
+
+    auto now = std::chrono::high_resolution_clock::now();
+    std::cout << "Sort completed in "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(now - before).count()
+              << " ms.\n";
+
+    // 重命名最终文件
+    std::string finalFile = file + ".sorted.bin";
+    std::rename(sortedFiles[0].c_str(), finalFile.c_str());
+
+    // 输出前 100 个排序元素
+    std::ifstream sortedFile(finalFile, std::ios::binary);
     std::vector<int> sortedData;
-    int tmp;
-    while (sortedFile.read(reinterpret_cast<char *>(&tmp), sizeof(tmp)) && sortedData.size() < 100)
-        sortedData.push_back(tmp);
+    while (sortedFile.read(reinterpret_cast<char *>(&val), sizeof(val)) && sortedData.size() < 100)
+        sortedData.push_back(val);
     std::cout << "Sorted data (first 100): ";
     for (auto x : sortedData) std::cout << x << " ";
     std::cout << std::endl;
@@ -159,24 +187,17 @@ int main()
 
     // 生成随机文件
     auto before = std::chrono::high_resolution_clock::now();
-    LRandom::genRandomFile(testFile, 0, 1000000, 5000000);
+    LRandom::genRandomFile(testFile, 0, 1000000, 100000000);
     auto now = std::chrono::high_resolution_clock::now();
-
-    std::cout << "Random Data generated in "
+    std::cout << "Random file generated in "
               << std::chrono::duration_cast<std::chrono::milliseconds>(now - before).count()
               << " ms.\n";
 
-    // 创建线程池
-    LThreadPool pool(10);
+    // 使用线程池
+    LThreadPool pool(12);
 
     // 外部排序
-    before = std::chrono::high_resolution_clock::now();
     externalSort(testFile, pool);
-    now = std::chrono::high_resolution_clock::now();
-
-    std::cout << "Sort completed in "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(now - before).count()
-              << " ms.\n";
 
 
     return 0;
