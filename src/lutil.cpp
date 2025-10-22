@@ -16,7 +16,9 @@ std::string LUtil::executableFullPath()
 {
 #ifdef L_OS_WIN32
     ;
-#elif L_OS_LINUX
+#endif
+
+#ifdef L_OS_LINUX
     ;
 #endif
 
@@ -28,7 +30,9 @@ std::string LUtil::executableDirectory()
 {
 #ifdef L_OS_WIN32
     ;
-#elif L_OS_LINUX
+#endif
+
+#ifdef L_OS_LINUX
     ;
 #endif
 
