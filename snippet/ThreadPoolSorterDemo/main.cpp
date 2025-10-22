@@ -6,138 +6,177 @@
  * Copyright (c) 2025 电子科技大学 刘治学
  *
  */
+
 #include <iostream>
-#include <vector>
-#include <algorithm>
-#include <future>
-#include <chrono>
 #include <fstream>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <chrono>
+#include <queue>
+#include <future>
 
 #include "lthreadpool.h"
 #include "lrandom.h"
 
 
-constexpr int size = 5000000;
-constexpr int left = 0;
-constexpr int right = 1000000;
-constexpr int poolSize = 12;
+// 每个块的大小，测试用 1MB
+constexpr size_t CHUNK_SIZE = 1ULL * 1024 * 1024;
 
 
-/**
- * @brief 合并函数，将两个有序子区间合并为一个有序区间。
- *
- * 该函数用于归并排序，将数组 arr 的 [left, mid] 和 [mid+1, right] 两个已排序的子区间合并为一个连续的有序区间。合并过程使用临时数组 tmp 存放结果，最后再移动回原数组。
- *
- * @param arr   待排序数组的引用。
- * @param left  左边子区间的起始索引（包含）。
- * @param mid   左边子区间的结束索引（包含），右边子区间从 mid+1 开始。
- * @param right 右边子区间的结束索引（包含）。
- */
-static void merge(std::vector<int> &arr, int left, int mid, int right)
+// ---------------------------
+// 读取文件块
+// ---------------------------
+std::vector<int> readChunk(const std::string &file, size_t offset, size_t count)
 {
-    std::vector<int> tmp;
-    tmp.reserve(right - left + 1);
-
-    int i = left, j = mid + 1;
-    while (i <= mid && j <= right)
-    {
-        if (arr[i] <= arr[j])
-            tmp.push_back(arr[i++]);
-        else
-            tmp.push_back(arr[j++]);
-    }
-    while (i <= mid) tmp.push_back(arr[i++]);
-    while (j <= right) tmp.push_back(arr[j++]);
-
-    std::move(tmp.begin(), tmp.end(), arr.begin() + left);
+    std::ifstream ifs(file, std::ios::binary);
+    ifs.seekg(offset);
+    std::vector<int> buffer(count);
+    ifs.read(reinterpret_cast<char *>(buffer.data()), count * sizeof(int));
+    buffer.resize(ifs.gcount() / sizeof(int));
+    return buffer;
 }
 
-/**
- * @brief 使用线程池的并行归并排序。
- *
- * 本函数基于“分而治之”的思想，在排序大规模数据时，通过线程池实现
- * 左右子区间的并行排序，以充分利用多核 CPU 的性能。对于小区间或递归
- * 深度较深的情况，自动退化为串行排序，以避免线程调度开销过大。
- *
- * 并行策略：
- * - 对较大区间 [left, right]，将左半区间提交到线程池异步执行；
- * - 右半区间在当前线程同步执行；
- * - 左右两半排序完成后，主线程执行合并操作；
- * - 小区间（小于等于 64）直接使用 std::sort 以减少线程开销；
- * - 限制最大递归深度 depth ≤ 3，以控制任务数量。
- *
- * @param arr   待排序数组引用。
- * @param left  当前排序区间左边界。
- * @param right 当前排序区间右边界。
- * @param pool  线程池实例引用，用于任务并行。
- * @param depth 当前递归深度，用于控制并行层数。
- */
-static void parallelMergeSort(std::vector<int> &arr, int left, int right, LThreadPool &pool, int depth = 0)
+// ---------------------------
+// 写排序后的块
+// ---------------------------
+std::string writeSortedChunk(const std::string &file, size_t idx, const std::vector<int> &data)
 {
-    // 递归终止条件：单个元素或空区间无需排序。
-    if (left >= right)
-        return;
+    std::string outFile = file + ".part" + std::to_string(idx) + ".sorted";
+    std::ofstream ofs(outFile, std::ios::binary);
+    ofs.write(reinterpret_cast<const char *>(data.data()), data.size() * sizeof(int));
+    return outFile;
+}
 
-    int len = right - left + 1;
-
-    // 若区间过小或递归层数过深，直接在当前线程中使用 std::sort 排序。
-    if (len <= 64 || depth >= 3)
+// ---------------------------
+// 多路归并
+// ---------------------------
+void mergeFiles(const std::vector<std::string> &files, const std::string &outputFile)
+{
+    struct Node
     {
-        std::sort(arr.begin() + left, arr.begin() + right + 1);
-        return;
+        int val;
+        size_t idx;
+        bool operator>(const Node &other) const { return val > other.val; }
+    };
+
+    std::vector<std::ifstream> streams(files.size());
+    for (size_t i = 0; i < files.size(); ++i)
+        streams[i].open(files[i], std::ios::binary);
+
+    std::priority_queue<Node, std::vector<Node>, std::greater<Node>> pq;
+    for (size_t i = 0; i < streams.size(); ++i)
+    {
+        int v;
+        if (streams[i].read(reinterpret_cast<char *>(&v), sizeof(v)))
+            pq.push({v, i});
     }
 
-    // 计算中点，将区间 [left, right] 一分为二。
-    int mid = (left + right) / 2;
+    std::ofstream ofs(outputFile, std::ios::binary);
+    while (!pq.empty())
+    {
+        Node node = pq.top();
+        pq.pop();
+        ofs.write(reinterpret_cast<char *>(&node.val), sizeof(node.val));
 
-    // 左半区间交由线程池异步执行。
-    auto leftFuture = pool.enqueue([&arr, left, mid, &pool, depth]()
-                                   { 
-        // 异步任务：递归排序左半区间。
-        parallelMergeSort(arr, left, mid, pool, depth + 1); });
+        int v;
+        if (streams[node.idx].read(reinterpret_cast<char *>(&v), sizeof(v)))
+            pq.push({v, node.idx});
+    }
+}
 
-    // 当前线程继续排序右半区间（同步执行）。
-    parallelMergeSort(arr, mid + 1, right, pool, depth + 1);
+// ---------------------------
+// 外部排序单文件
+// ---------------------------
+void externalSort(const std::string &file, LThreadPool &pool)
+{
+    std::ifstream ifs(file, std::ios::binary);
+    if (!ifs) return;
 
-    // 等待左半区间排序任务完成。
-    leftFuture.get();
+    std::vector<std::future<std::string>> futures;
+    size_t idx = 0;
+    std::vector<int> originalData;
 
-    // 合并左右两个有序区间。
-    merge(arr, left, mid, right);
+    // 输出原始数据（前100个）
+    int val;
+    while (ifs.read(reinterpret_cast<char *>(&val), sizeof(val)) && originalData.size() < 100)
+        originalData.push_back(val);
+    std::cout << "Original data (first 100): ";
+    for (auto x : originalData) std::cout << x << " ";
+    std::cout << std::endl;
+
+    ifs.clear();
+    ifs.seekg(0);
+
+    // 分块排序
+    while (!ifs.eof())
+    {
+        std::vector<int> buffer;
+        buffer.reserve(CHUNK_SIZE / sizeof(int));
+
+        int val;
+        while (buffer.size() < buffer.capacity() && ifs.read(reinterpret_cast<char *>(&val), sizeof(val)))
+        {
+            buffer.push_back(val);
+        }
+        if (buffer.empty()) break;
+
+        futures.push_back(pool.enqueue([buffer = std::move(buffer), file, idx]() mutable
+                                       {
+            std::sort(buffer.begin(), buffer.end());
+            return writeSortedChunk(file, idx, buffer); }));
+        ++idx;
+    }
+
+    // 等待块排序完成
+    std::vector<std::string> sortedParts;
+    for (auto &f : futures) sortedParts.push_back(f.get());
+
+    // 最终排序文件名
+    std::string outputFile = file + ".sorted";
+
+    // 多路归并
+    mergeFiles(sortedParts, outputFile);
+
+    // 删除临时块
+    for (auto &p : sortedParts) std::remove(p.c_str());
+
+    // 输出排序后前 100 个元素
+    std::ifstream sortedFile(outputFile, std::ios::binary);
+    std::vector<int> sortedData;
+    int tmp;
+    while (sortedFile.read(reinterpret_cast<char *>(&tmp), sizeof(tmp)) && sortedData.size() < 100)
+        sortedData.push_back(tmp);
+    std::cout << "Sorted data (first 100): ";
+    for (auto x : sortedData) std::cout << x << " ";
+    std::cout << std::endl;
 }
 
 
 int main()
 {
-    // 1. 生成 num 个测试数据。
+    const std::string testFile = "test.bin";
+
+    // 生成随机文件
     auto before = std::chrono::high_resolution_clock::now();
-    std::vector<int> vec = LRandom::genRandomVector(left, right, size);
+    LRandom::genRandomFile(testFile, 0, 1000000, 5000000);
     auto now = std::chrono::high_resolution_clock::now();
 
-    std::cout << "Random vec generated in "
+    std::cout << "Random Data generated in "
               << std::chrono::duration_cast<std::chrono::milliseconds>(now - before).count()
               << " ms.\n";
 
-    std::ofstream beforeFile("before.txt");
-    for (auto &e : vec) beforeFile << e << ' ';
-    beforeFile.close();
+    // 创建线程池
+    LThreadPool pool(10);
 
-    // 2. 创建线程池。
-    LThreadPool pool(poolSize);
-
-    // 3. 启动并行归并排序。
+    // 外部排序
     before = std::chrono::high_resolution_clock::now();
-    parallelMergeSort(vec, 0, size - 1, pool);
+    externalSort(testFile, pool);
     now = std::chrono::high_resolution_clock::now();
 
-    std::cout << "Parallel merge sort completed in "
+    std::cout << "Sort completed in "
               << std::chrono::duration_cast<std::chrono::milliseconds>(now - before).count()
               << " ms.\n";
-
-    // 4. 输出排序结果到文件。
-    std::ofstream afterFile("after.txt");
-    for (auto &e : vec) afterFile << e << ' ';
-    afterFile.close();
 
 
     return 0;

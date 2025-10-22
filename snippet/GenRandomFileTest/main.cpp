@@ -6,7 +6,7 @@
 
 int main()
 {
-    const std::string filePath = "text.txt";
+    const std::string filePath = "data_text.bin";
 
     LRandom::genRandomFile(filePath, 1, 1000000, 5000000);
 

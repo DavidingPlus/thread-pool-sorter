@@ -1,5 +1,5 @@
 .vscode/
 build/
 CMakeUserPresets.json
-*.txt
-!CMakeLists.txt
+*.bin
+*.bin.sorted
