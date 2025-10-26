@@ -8,6 +8,7 @@
  */
 
 #include <iostream>
+#include <chrono>
 
 #include "lthreadpool.h"
 #include "lrandom.h"

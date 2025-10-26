@@ -7,14 +7,14 @@
  *
  */
 
+#include "lglobalmacros.h"
+
 #include <iostream>
 #include <string>
 
 #ifdef L_OS_LINUX
 #include <sys/stat.h>
 #endif
-
-#include "lglobalmacros.h"
 
 
 int main(int argc, char const *argv[])

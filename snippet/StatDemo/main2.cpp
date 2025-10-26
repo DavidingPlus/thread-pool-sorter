@@ -8,6 +8,8 @@
  *
  */
 
+#include "lglobalmacros.h"
+
 #include <iostream>
 #include <string>
 #include <ctime>
@@ -19,8 +21,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #endif
-
-#include "lglobalmacros.h"
 
 
 int main(int argc, char const *argv[])
