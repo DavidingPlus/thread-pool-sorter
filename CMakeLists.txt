@@ -96,7 +96,7 @@ message ("-- [Thread Pool Sorter] Install destination would be: ${CMAKE_INSTALL_
 
 
 include (public-headers.cmake)
-set_target_properties (thread-pool-sorter PROPERTIES PUBLIC_HEADER ${CMAKE_PROJECT_PUBLIC_HEADERS})
+set_target_properties (thread-pool-sorter PROPERTIES PUBLIC_HEADER ${THREAD_POOL_SORTER_PUBLIC_HEADERS})
 
 install (TARGETS thread-pool-sorter
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
