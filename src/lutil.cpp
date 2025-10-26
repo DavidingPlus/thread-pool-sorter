@@ -12,6 +12,7 @@
 #include "lglobalmacros.h"
 
 
+// TODO
 std::string LUtil::executableFullPath()
 {
 #ifdef L_OS_WIN32
