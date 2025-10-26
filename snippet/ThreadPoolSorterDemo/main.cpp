@@ -20,7 +20,7 @@ int main()
     const std::string testFilePath = "test.bin";
 
     auto before = std::chrono::high_resolution_clock::now();
-    LRandom::genRandomFile(testFilePath, 0, 1000000, 1000000);
+    LRandom::genRandomFile(testFilePath, 0, 1000000, 10000000);
     auto now = std::chrono::high_resolution_clock::now();
     std::cout << "Random file generated in "
               << std::chrono::duration_cast<std::chrono::milliseconds>(now - before).count()
