@@ -8,29 +8,31 @@
  *
  */
 
-#include <ctime>
 #include <iostream>
 #include <string>
+#include <ctime>
 
+#ifdef L_OS_LINUX
 #include <grp.h>
 #include <pwd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#endif
 
 #include "lglobalmacros.h"
 
 
 int main(int argc, char const *argv[])
 {
-#ifdef L_OS_LINUX
-
     if (argc < 2)
     {
         std::cout << "usage: " << argv[0] << " <filePath>" << std::endl;
         return -1;
     }
 
+
+#ifdef L_OS_LINUX
 
     // 通过 stat() 函数获取文件的信息。
     struct stat statbuf;

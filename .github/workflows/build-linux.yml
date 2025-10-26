@@ -41,6 +41,16 @@ jobs:
 
         cmake --build --preset thread-pool-sorter-release -t install
 
+    - name: Run Targets
+      working-directory: ${{github.workspace}}
+      run: |
+
+        ./build/Release/snippet/StatDemo/StatDemo1 ./snippet/StatDemo/test.txt
+
+        ./build/Release/snippet/StatDemo/StatDemo2 ./snippet/StatDemo/test.txt
+
+        ./build/Release/snippet/ThreadPoolSorterDemo/ThreadPoolSorterDemo
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:

@@ -10,15 +10,15 @@
 #include <iostream>
 #include <string>
 
+#ifdef L_OS_LINUX
 #include <sys/stat.h>
+#endif
 
 #include "lglobalmacros.h"
 
 
 int main(int argc, char const *argv[])
 {
-#ifdef L_OS_LINUX
-
     if (argc < 2)
     {
         std::cerr << "usage: " << argv[0] << " <filePath>" << std::endl;
@@ -27,6 +27,8 @@ int main(int argc, char const *argv[])
         return EXIT_FAILURE;
     }
 
+
+#ifdef L_OS_LINUX
 
     const char *filePath = argv[1];
 

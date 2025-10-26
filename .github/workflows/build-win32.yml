@@ -34,6 +34,16 @@ jobs:
       working-directory: ${{github.workspace}}
       run: cmake --build --preset thread-pool-sorter-release
 
+    - name: Run Targets
+      working-directory: ${{github.workspace}}
+      run: |
+
+        .\build\snippet\StatDemo\Release\StatDemo1.exe .\snippet\StatDemo\test.txt
+
+        .\build\snippet\StatDemo\Release\StatDemo2.exe .\snippet\StatDemo\test.txt
+
+        .\build\snippet\ThreadPoolSorterDemo\Release\ThreadPoolSorterDemo.exe
+
     - name: Install Targets
       working-directory: ${{github.workspace}}
       run: |
