@@ -18,9 +18,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "lglobalmacros.h"
+
 
 int main(int argc, char const *argv[])
 {
+#ifdef L_OS_LINUX
+
     if (argc < 2)
     {
         std::cout << "usage: " << argv[0] << " <filePath>" << std::endl;
@@ -109,6 +113,8 @@ int main(int argc, char const *argv[])
 
     // 输出。
     std::cout << perms.c_str() << " " << linkNum << " " << user.c_str() << " " << group.c_str() << " " << size << " " << mtime.c_str() << " " << argv[1] << std::endl;
+
+#endif
 
 
     return 0;

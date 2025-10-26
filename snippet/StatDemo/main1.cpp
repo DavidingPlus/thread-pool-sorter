@@ -12,9 +12,13 @@
 
 #include <sys/stat.h>
 
+#include "lglobalmacros.h"
+
 
 int main(int argc, char const *argv[])
 {
+#ifdef L_OS_LINUX
+
     if (argc < 2)
     {
         std::cerr << "usage: " << argv[0] << " <filePath>" << std::endl;
@@ -73,6 +77,8 @@ int main(int argc, char const *argv[])
     std::cout << "文件最后访问时间: " << ctime(&fileStat.st_atime);
     std::cout << "文件最后修改时间: " << ctime(&fileStat.st_mtime);
     std::cout << "文件最后状态更改时间: " << ctime(&fileStat.st_ctime);
+
+#endif
 
 
     return 0;
