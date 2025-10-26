@@ -27,18 +27,20 @@ LThreadPool::LThreadPool(size_t threads) : stop(false)
                 {
                     std::function<void()> task;
 
-                    std::unique_lock<std::mutex> lock(this->queue_mutex);
+                    {
+                        std::unique_lock<std::mutex> lock(this->queue_mutex);
 
-                    // 等待任务到来或线程池停止。
-                    this->condition.wait(lock, [this]
-                                         { return this->stop || !this->tasks.empty(); });
+                        // 等待任务到来或线程池停止。
+                        this->condition.wait(lock, [this]
+                                             { return this->stop || !this->tasks.empty(); });
 
-                    // 如果线程池停止且任务队列为空，退出线程。
-                    if (this->stop && this->tasks.empty()) return;
+                        // 如果线程池停止且任务队列为空，退出线程。
+                        if (this->stop && this->tasks.empty()) return;
 
-                    // 取出队列首任务并从队列移除。
-                    task = std::move(this->tasks.front());
-                    this->tasks.pop();
+                        // 取出队列首任务并从队列移除。
+                        task = std::move(this->tasks.front());
+                        this->tasks.pop();
+                    }
 
                     // 执行任务（解锁后执行）。
                     task();
@@ -48,12 +50,14 @@ LThreadPool::LThreadPool(size_t threads) : stop(false)
 
 LThreadPool::~LThreadPool()
 {
-    // 析构时设置 stop 标志，通知所有线程退出等待。然后 join 每个工作线程，保证线程安全退出。
-    std::unique_lock<std::mutex> lock(queue_mutex);
-    stop = true;
+    {
+        // 析构时设置 stop 标志，通知所有线程退出等待。然后 join 每个工作线程，保证线程安全退出。
+        std::unique_lock<std::mutex> lock(queue_mutex);
+        stop = true;
 
-    // 唤醒所有等待线程，确保它们能检查 stop 并退出。
-    condition.notify_all();
+        // 唤醒所有等待线程，确保它们能检查 stop 并退出。
+        condition.notify_all();
+    }
 
     // 等待所有工作线程退出。
     for (std::thread &worker : workers) worker.join();

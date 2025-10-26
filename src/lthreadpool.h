@@ -104,17 +104,20 @@ inline auto LThreadPool::enqueue(F &&f, Args &&...args)
     // 获取 future 用于返回调用结果。
     std::future<return_type> res = task->get_future();
 
-    std::unique_lock<std::mutex> lock(queue_mutex);
+    // 这对大括号的作用是限定 std::unique_lock 的生命周期！确保互斥锁只在操作任务队列（检查 stop、加入任务、通知线程）期间持有。离开这个作用域时，lock 自动释放锁，从而允许被唤醒的线程顺利获取锁执行任务，避免长时间持锁导致线程池卡住或死锁。cpp 中两处括号的作用同理。
+    {
+        std::unique_lock<std::mutex> lock(queue_mutex);
 
-    // 不允许在线程池停止后加入任务。
-    if (stop) throw std::runtime_error("enqueue on stopped LThreadPool");
+        // 不允许在线程池停止后加入任务。
+        if (stop) throw std::runtime_error("Enqueue to a stopped thread pool");
 
-    // 将任务封装成 void() 类型，放入队列。
-    tasks.emplace([task]()
-                  { (*task)(); });
+        // 将任务封装成 void() 类型，放入队列。
+        tasks.emplace([task]()
+                      { (*task)(); });
 
-    // 通知一个等待线程有新任务。
-    condition.notify_one();
+        // 通知一个等待线程有新任务。
+        condition.notify_one();
+    }
 
 
     return res;
