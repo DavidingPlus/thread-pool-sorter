@@ -1,7 +1,7 @@
 /**
  * @file lfile.cpp
  * @author DavidingPlus (davidingplus@qq.com)
- * @brief 平时作业一。带缓存的文件操作类。
+ * @brief 带缓存的文件操作类源文件。
  *
  * Copyright (c) 2025 电子科技大学 刘治学
  *
