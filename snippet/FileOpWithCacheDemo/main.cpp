@@ -9,10 +9,37 @@
 
 #include <iostream>
 
+#include "lfile.h"
+
+
+constexpr int maxBufferSize = 1024;
+
 
 int main()
 {
-    std::cout << __cplusplus << std::endl;
+    LFile file;
+
+    // 创建文件。
+    file.lopen("test.txt", O_CREAT, 0664);
+    file.lclose();
+
+    // 读取刚才创建的文件。
+    file.lopen("test.txt", O_RDWR);
+
+    // 写文件。
+    const std::string s = "hello world";
+    file.lwrite(s.c_str(), s.size());
+
+    // lseek
+    file.llseek(0, SEEK_SET);
+
+    // 读文件。
+    char buf[maxBufferSize] = {0};
+    file.lread(buf, sizeof(buf));
+    std::cout << buf << std::endl;
+
+    // 关闭文件。
+    file.lclose();
 
 
     return 0;

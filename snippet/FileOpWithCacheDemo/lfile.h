@@ -10,18 +10,35 @@
 #ifndef _LFILE_H_
 #define _LFILE_H_
 
+#include <iostream>
+#include <string>
+
+#include <fcntl.h>
+
 
 class LFile
 {
 
 public:
 
-    LFile();
+    LFile() = default;
 
-    virtual ~LFile();
+    virtual ~LFile() { lclose(); }
+
+    void lopen(const std::string &filePath, int flags, mode_t mode = 0);
+
+    void lclose();
+
+    ssize_t lread(void *buf, size_t count);
+
+    ssize_t lwrite(const void *buf, size_t count);
+
+    off_t llseek(off_t offset, int whence);
 
 
 private:
+
+    int m_fd = -1;
 };
 
 
