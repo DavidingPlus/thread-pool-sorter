@@ -3,3 +3,4 @@ add_executable (FileOpWithCacheDemo
     lfile.cpp
     lcachemanager.cpp
 )
+target_link_libraries (FileOpWithCacheDemo thread-pool-sorter)

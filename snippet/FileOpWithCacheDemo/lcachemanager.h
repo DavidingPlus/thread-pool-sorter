@@ -17,6 +17,10 @@ class LCacheManager
 
 public:
 
+    LCacheManager();
+
+    virtual ~LCacheManager();
+
 
 private:
 };
