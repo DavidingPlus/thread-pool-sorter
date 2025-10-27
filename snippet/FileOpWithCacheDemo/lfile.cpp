@@ -14,49 +14,49 @@
 #include <unistd.h>
 
 
-void LFile::lopen(const std::string &filePath, int flags, mode_t mode)
+void LFile::open(const std::string &filePath, int flags, mode_t mode)
 {
     if (0 == mode)
     {
-        m_fd = open(filePath.c_str(), flags);
+        m_fd = ::open(filePath.c_str(), flags);
     }
     else
     {
-        m_fd = open(filePath.c_str(), flags, mode);
+        m_fd = ::open(filePath.c_str(), flags, mode);
     }
 
-    if (-1 == m_fd) throw std::runtime_error("lopen: " + std::string(std::strerror(errno)));
+    if (-1 == m_fd) throw std::runtime_error("open: " + std::string(std::strerror(errno)));
 }
 
-void LFile::lclose()
+void LFile::close()
 {
     if (-1 == m_fd) return;
 
-    close(m_fd);
+    ::close(m_fd);
 
     m_fd = -1;
 }
 
-ssize_t LFile::lread(void *buf, size_t count)
+ssize_t LFile::read(void *buf, size_t count)
 {
-    if (-1 == m_fd) throw std::runtime_error("lread: cannot read an invalid file");
+    if (-1 == m_fd) throw std::runtime_error("read: cannot read an invalid file");
 
 
-    return read(m_fd, buf, count);
+    return ::read(m_fd, buf, count);
 }
 
-ssize_t LFile::lwrite(const void *buf, size_t count)
+ssize_t LFile::write(const void *buf, size_t count)
 {
-    if (-1 == m_fd) throw std::runtime_error("lwrite: cannot write an invalid file");
+    if (-1 == m_fd) throw std::runtime_error("write: cannot write an invalid file");
 
 
-    return write(m_fd, buf, count);
+    return ::write(m_fd, buf, count);
 }
 
-off_t LFile::llseek(off_t offset, int whence)
+off_t LFile::lseek(off_t offset, int whence)
 {
-    if (-1 == m_fd) throw std::runtime_error("llseek: cannot lseek an invalid file");
+    if (-1 == m_fd) throw std::runtime_error("lseek: cannot lseek an invalid file");
 
 
-    return lseek(m_fd, offset, whence);
+    return ::lseek(m_fd, offset, whence);
 }

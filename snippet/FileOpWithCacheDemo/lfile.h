@@ -23,17 +23,17 @@ public:
 
     LFile() = default;
 
-    virtual ~LFile() { lclose(); }
+    virtual ~LFile() { close(); }
 
-    void lopen(const std::string &filePath, int flags, mode_t mode = 0);
+    void open(const std::string &filePath, int flags, mode_t mode = 0);
 
-    void lclose();
+    void close();
 
-    ssize_t lread(void *buf, size_t count);
+    ssize_t read(void *buf, size_t count);
 
-    ssize_t lwrite(const void *buf, size_t count);
+    ssize_t write(const void *buf, size_t count);
 
-    off_t llseek(off_t offset, int whence);
+    off_t lseek(off_t offset, int whence);
 
 
 private:

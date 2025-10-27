@@ -20,26 +20,26 @@ int main()
     LFile file;
 
     // 创建文件。
-    file.lopen("test.txt", O_CREAT, 0664);
-    file.lclose();
+    file.open("test.txt", O_CREAT, 0664);
+    file.close();
 
     // 读取刚才创建的文件。
-    file.lopen("test.txt", O_RDWR);
+    file.open("test.txt", O_RDWR);
 
     // 写文件。
     const std::string s = "hello world";
-    file.lwrite(s.c_str(), s.size());
+    file.write(s.c_str(), s.size());
 
     // lseek
-    file.llseek(0, SEEK_SET);
+    file.lseek(0, SEEK_SET);
 
     // 读文件。
     char buf[maxBufferSize] = {0};
-    file.lread(buf, sizeof(buf));
+    file.read(buf, sizeof(buf));
     std::cout << buf << std::endl;
 
     // 关闭文件。
-    file.lclose();
+    file.close();
 
 
     return 0;
