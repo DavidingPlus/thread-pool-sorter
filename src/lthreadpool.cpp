@@ -31,8 +31,9 @@ LThreadPool::LThreadPool(size_t threads) : stop(false)
                         std::unique_lock<std::mutex> lock(this->queue_mutex);
 
                         // 等待任务到来或线程池停止。
-                        this->condition.wait(lock, [this]
-                                             { return this->stop || !this->tasks.empty(); });
+                        this->condition.wait(lock, [this] { //
+                            return this->stop || !this->tasks.empty();
+                        });
 
                         // 如果线程池停止且任务队列为空，退出线程。
                         if (this->stop && this->tasks.empty()) return;
