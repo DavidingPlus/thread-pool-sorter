@@ -53,7 +53,7 @@ jobs:
 
         ./build/Release/snippet/ThreadPoolSorterDemo/ThreadPoolSorterDemo
 
-        ./build/Debug/snippet/FileOpWithCacheDemo/FileOpWithCacheDemo
+        ./build/Release/snippet/FileOpWithCacheDemo/FileOpWithCacheDemo
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
