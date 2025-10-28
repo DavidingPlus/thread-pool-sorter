@@ -1,5 +1,5 @@
 /**
- * @file lfile.h
+ * @file lcachedfile.h
  * @author DavidingPlus (davidingplus@qq.com)
  * @brief 带缓存的文件操作类头文件。
  * @note 调用全局 LCacheManager 提供缓存读写。提供 open/read/write/lseek/close 接口。
@@ -7,8 +7,8 @@
  * Copyright (c) 2025 电子科技大学 刘治学
  */
 
-#ifndef _LFILE_H_
-#define _LFILE_H_
+#ifndef _LCACHEDFILE_H_
+#define _LCACHEDFILE_H_
 
 #include <string>
 
@@ -16,10 +16,10 @@
 
 
 /**
- * @class LFile
+ * @class LCachedFile
  * @brief 带缓存的文件操作系统类。
  */
-class LFile
+class LCachedFile
 {
 
 public:
@@ -27,12 +27,12 @@ public:
     /**
      * @brief 默认构造函数。
      */
-    LFile() = default;
+    LCachedFile() = default;
 
     /**
      * @brief 析构函数。
      */
-    virtual ~LFile() { close(); }
+    virtual ~LCachedFile() { close(); }
 
     /**
      * @brief 打开文件，并在全局缓存管理器 LCacheManager 中注册。

@@ -7,7 +7,7 @@
  *
  */
 
-#include "lfile.h"
+#include "lcachedfile.h"
 
 #include <iostream>
 #include <cstring>
@@ -19,7 +19,7 @@
 int main()
 {
     const std::string filePath = "test.txt";
-    LFile f;
+    LCachedFile f;
 
     // 打开或创建文件。
     f.open(filePath, O_RDWR | O_TRUNC | O_CREAT, 0644);

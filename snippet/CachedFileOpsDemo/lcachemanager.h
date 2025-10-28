@@ -49,7 +49,7 @@ public:
     ~LCacheManager();
 
     /**
-     * @brief 打开并注册文件到缓存管理。LFile 在 open 时调用。
+     * @brief 打开并注册文件到缓存管理。LCachedFile 在 open 时调用。
      * @param filePath 文件路径。
      * @param fd 已打开的文件描述符。
      */

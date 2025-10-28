@@ -1,12 +1,12 @@
 /**
- * @file lfile.cpp
+ * @file lcachedfile.cpp
  * @author DavidingPlus (davidingplus@qq.com)
  * @brief 带缓存的文件操作类源文件。
  *
  * Copyright (c) 2025 电子科技大学 刘治学
  */
 
-#include "lfile.h"
+#include "lcachedfile.h"
 
 #include "lcachemanager.h"
 
@@ -18,7 +18,7 @@
 #include <sys/stat.h>
 
 
-void LFile::open(const std::string &filePath, int flags, mode_t mode)
+void LCachedFile::open(const std::string &filePath, int flags, mode_t mode)
 {
     if (-1 == m_fd) close();
 
@@ -46,7 +46,7 @@ void LFile::open(const std::string &filePath, int flags, mode_t mode)
     LCacheManager::instance().addFile(m_path, m_fd);
 }
 
-void LFile::close()
+void LCachedFile::close()
 {
     if (-1 == m_fd) return;
 
@@ -60,7 +60,7 @@ void LFile::close()
     m_offset = 0;
 }
 
-ssize_t LFile::read(void *buf, size_t count)
+ssize_t LCachedFile::read(void *buf, size_t count)
 {
     if (-1 == m_fd) return -1;
 
@@ -68,7 +68,7 @@ ssize_t LFile::read(void *buf, size_t count)
     return LCacheManager::instance().read(m_path, buf, count, m_offset);
 }
 
-ssize_t LFile::write(const void *buf, size_t count)
+ssize_t LCachedFile::write(const void *buf, size_t count)
 {
     if (-1 == m_fd) return -1;
 
@@ -76,7 +76,7 @@ ssize_t LFile::write(const void *buf, size_t count)
     return LCacheManager::instance().write(m_path, buf, count, m_offset);
 }
 
-off_t LFile::lseek(off_t offset, int whence)
+off_t LCachedFile::lseek(off_t offset, int whence)
 {
     if (m_fd < 0) return -1;
 

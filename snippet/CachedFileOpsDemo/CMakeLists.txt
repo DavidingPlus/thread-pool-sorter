@@ -1,6 +1,6 @@
 add_executable (CachedFileOpsDemo
     main.cpp
-    lfile.cpp
+    lcachedfile.cpp
     lcachemanager.cpp
 )
 target_link_libraries (CachedFileOpsDemo thread-pool-sorter)
