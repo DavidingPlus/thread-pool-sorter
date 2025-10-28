@@ -1,5 +1,3 @@
 .vscode/
 build/
 CMakeUserPresets.json
-*.bin
-*.sorted
