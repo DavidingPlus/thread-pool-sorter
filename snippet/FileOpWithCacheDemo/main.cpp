@@ -7,39 +7,39 @@
  *
  */
 
-#include <iostream>
-
 #include "lfile.h"
 
+#include <iostream>
+#include <cstring>
 
-constexpr int maxBufferSize = 1024;
+#include <fcntl.h>
+#include <unistd.h>
 
 
 int main()
 {
-    LFile file;
 
-    // 创建文件。
-    file.open("test.txt", O_CREAT, 0664);
-    file.close();
+    LFile f;
+    f.open("test.dat", O_RDWR | O_TRUNC | O_CREAT, 0644); // 打开或创建文件
 
-    // 读取刚才创建的文件。
-    file.open("test.txt", O_RDWR);
+    const char *s = "Hello block-cache world! This is a test string to span multiple blocks if needed.";
+    ssize_t wn = f.write(s, std::strlen(s)); // 写入（写入到缓存）
+    std::cout << "write bytes: " << wn << std::endl;
 
-    // 写文件。
-    const std::string s = "hello world";
-    file.write(s.c_str(), s.size());
+    f.lseek(0, SEEK_SET); // 回到文件头
+    char buf[128] = {0};
+    ssize_t rn = f.read(buf, sizeof(buf) - 1); // 从缓存读
+    std::cout << "read bytes: " << rn << ", content: [" << buf << "]" << std::endl;
 
-    // lseek
-    file.lseek(0, SEEK_SET);
+    sleep(5);
 
-    // 读文件。
-    char buf[maxBufferSize] = {0};
-    file.read(buf, sizeof(buf));
-    std::cout << buf << std::endl;
+    // 强制 flush 并关闭
+    f.close();
+    std::cout << "closed and flushed." << std::endl;
 
-    // 关闭文件。
-    file.close();
+    sleep(5);
+
+    std::remove("test.dat");
 
 
     return 0;
