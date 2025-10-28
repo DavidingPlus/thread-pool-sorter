@@ -8,6 +8,7 @@
  */
 
 #include "lcachedfile.h"
+#include "lutil.h"
 
 #include <iostream>
 #include <cstring>
@@ -18,7 +19,7 @@
 
 int main()
 {
-    const std::string filePath = "test.txt";
+    const std::string filePath = LUtil::executableDirectory() + "test.txt";
     LCachedFile f;
 
     // 打开或创建文件。

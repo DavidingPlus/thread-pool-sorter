@@ -18,6 +18,11 @@
 #include <shlwapi.h>
 #endif
 
+#ifdef L_OS_LINUX
+#include <unistd.h>
+#include <dirent.h>
+#endif
+
 
 std::string LUtil::executableFullPath()
 {

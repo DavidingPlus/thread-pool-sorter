@@ -13,12 +13,13 @@
 #include "lthreadpool.h"
 #include "lrandom.h"
 #include "lsorter.h"
+#include "lutil.h"
 
 
 int main()
 {
     // 生成测试文件。
-    const std::string testFilePath = "test.bin";
+    const std::string testFilePath = LUtil::executableDirectory() + "test.bin";
 
     auto before = std::chrono::high_resolution_clock::now();
     LRandom::genRandomFile(testFilePath, 0, 1000000, 10000000);
