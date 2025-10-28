@@ -2,55 +2,59 @@
  * @file lfile.cpp
  * @author DavidingPlus (davidingplus@qq.com)
  * @brief 带缓存的文件操作类源文件。
+ *
+ * Copyright (c) 2025 电子科技大学 刘治学
  */
 
 #include "lfile.h"
+
 #include "lcachemanager.h"
+
+#include <stdexcept>
+#include <cstring>
 
 #include <fcntl.h>
 #include <unistd.h>
-#include <stdexcept>
+#include <sys/stat.h>
 
-
-LFile::~LFile()
-{
-    close(); // 析构时确保关闭
-}
 
 void LFile::open(const std::string &filePath, int flags, mode_t mode)
 {
-    if (m_fd != -1)
-    {
-        close(); // 已打开则先关闭
-    }
+    if (-1 == m_fd) close();
 
-    int fd;
+
+    // 使用 mode。
     if (flags & O_CREAT)
     {
-        fd = ::open(filePath.c_str(), flags, mode); // 使用 mode
+        m_fd = ::open(filePath.c_str(), flags, mode);
     }
+    // 不带 mode。
     else
     {
-        fd = ::open(filePath.c_str(), flags); // 不带 mode
+        m_fd = ::open(filePath.c_str(), flags);
     }
 
-    if (fd < 0)
+    if (-1 == m_fd)
     {
-        throw std::runtime_error("open failed"); // 上层可捕获
+        throw std::runtime_error("open: " + std::string(std::strerror(errno)));
     }
 
-    m_fd = fd;
     m_path = filePath;
     m_offset = 0;
-    LCacheManager::instance().addFile(m_path, m_fd); // 注册到全局缓存管理器
+
+    // 注册到全局缓存管理器。
+    LCacheManager::instance().addFile(m_path, m_fd);
 }
 
 void LFile::close()
 {
-    if (m_fd == -1) return;
+    if (-1 == m_fd) return;
 
-    LCacheManager::instance().flush(m_path);     // flush 文件脏块
-    LCacheManager::instance().closeFile(m_path); // 注销并 close(fd)
+    // 刷新缓存中的脏块。
+    LCacheManager::instance().flush(m_path);
+    // 关闭并销毁文件描述符。
+    LCacheManager::instance().closeFile(m_path);
+
     m_fd = -1;
     m_path.clear();
     m_offset = 0;
@@ -58,32 +62,59 @@ void LFile::close()
 
 ssize_t LFile::read(void *buf, size_t count)
 {
-    if (m_fd == -1) return -1;
+    if (-1 == m_fd) return -1;
+
+
     return LCacheManager::instance().read(m_path, buf, count, m_offset);
 }
 
 ssize_t LFile::write(const void *buf, size_t count)
 {
-    if (m_fd == -1) return -1;
+    if (-1 == m_fd) return -1;
+
+
     return LCacheManager::instance().write(m_path, buf, count, m_offset);
 }
 
 off_t LFile::lseek(off_t offset, int whence)
 {
-    if (m_fd == -1) return -1;
+    if (m_fd < 0) return -1;
 
-    if (whence == SEEK_SET)
+
+    // 需要注意的是，缓存中的文件偏移量和实际文件偏移量是两个东西，因为我们做了缓存，这个偏移量是针对缓存的。当然在 LCacheManager 中会有和实际文件偏移量的同步操作。
+    off_t newOffset = -1;
+    switch (whence)
     {
-        m_offset = offset;
+        case SEEK_SET:
+        {
+            if (offset < 0) return -1;
+            newOffset = offset;
+            break;
+        }
+
+        case SEEK_CUR:
+        {
+            if (m_offset + offset < 0) return -1;
+            newOffset = m_offset + offset;
+            break;
+        }
+
+        case SEEK_END:
+        {
+            // 获取文件大小。
+            struct stat st;
+            if (fstat(m_fd, &st) < 0) return -1;
+            if (st.st_size + offset < 0) return -1;
+            newOffset = st.st_size + offset;
+            break;
+        }
+
+        default:
+            return -1;
     }
-    else if (whence == SEEK_CUR)
-    {
-        m_offset += offset;
-    }
-    else if (whence == SEEK_END)
-    {
-        off_t r = ::lseek(m_fd, offset, SEEK_END);
-        if (r >= 0) m_offset = r;
-    }
+
+    m_offset = newOffset;
+
+
     return m_offset;
 }
