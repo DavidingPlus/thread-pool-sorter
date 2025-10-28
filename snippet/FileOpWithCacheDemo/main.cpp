@@ -18,28 +18,34 @@
 
 int main()
 {
-
+    const std::string filePath = "test.txt";
     LFile f;
-    f.open("test.dat", O_RDWR | O_TRUNC | O_CREAT, 0644); // 打开或创建文件
 
-    const char *s = "Hello block-cache world! This is a test string to span multiple blocks if needed.";
-    ssize_t wn = f.write(s, std::strlen(s)); // 写入（写入到缓存）
+    // 打开或创建文件。
+    f.open(filePath, O_RDWR | O_TRUNC | O_CREAT, 0644);
+
+    const char *s = "Hello World";
+    // 写入到缓存。
+    ssize_t wn = f.write(s, std::strlen(s));
     std::cout << "write bytes: " << wn << std::endl;
 
-    f.lseek(0, SEEK_SET); // 回到文件头
+    // 回到文件头。
+    f.lseek(0, SEEK_SET);
     char buf[128] = {0};
-    ssize_t rn = f.read(buf, sizeof(buf) - 1); // 从缓存读
-    std::cout << "read bytes: " << rn << ", content: [" << buf << "]" << std::endl;
+
+    // 从缓存读。这个时候文件中应该还没有数据。
+    ssize_t rn = f.read(buf, sizeof(buf) - 1);
+    std::cout << "read bytes: " << rn << ", content: \"" << buf << "\"" << std::endl;
 
     sleep(5);
 
-    // 强制 flush 并关闭
+    // 强制 flush 并关闭。
     f.close();
     std::cout << "closed and flushed." << std::endl;
 
     sleep(5);
 
-    std::remove("test.dat");
+    std::remove(filePath.c_str());
 
 
     return 0;
