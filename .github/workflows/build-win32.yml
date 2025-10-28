@@ -46,9 +46,7 @@ jobs:
 
     - name: Install Targets
       working-directory: ${{github.workspace}}
-      run: |
-
-        cmake --build --preset thread-pool-sorter-release -t install
+      run: cmake --build --preset thread-pool-sorter-release -t install
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4

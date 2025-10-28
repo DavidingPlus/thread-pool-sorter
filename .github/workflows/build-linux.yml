@@ -33,15 +33,11 @@ jobs:
 
     - name: Build Targets
       working-directory: ${{github.workspace}}
-      run: cmake --build --preset thread-pool-sorter-release
-
-    - name: Install Targets
-      working-directory: ${{github.workspace}}
       run: |
 
-        touch snippet/FileOpWithCacheDemo/.buildme
+        touch snippet/CachedFileOpsDemo/.buildme
 
-        cmake --build --preset thread-pool-sorter-release -t install
+        cmake --build --preset thread-pool-sorter-release
 
     - name: Run Targets
       working-directory: ${{github.workspace}}
@@ -53,7 +49,11 @@ jobs:
 
         ./build/Release/snippet/ThreadPoolSorterDemo/ThreadPoolSorterDemo
 
-        ./build/Release/snippet/FileOpWithCacheDemo/FileOpWithCacheDemo
+        ./build/Release/snippet/CachedFileOpsDemo/CachedFileOpsDemo
+
+    - name: Install Targets
+      working-directory: ${{github.workspace}}
+      run: cmake --build --preset thread-pool-sorter-release -t install
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
