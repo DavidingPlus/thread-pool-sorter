@@ -4,7 +4,7 @@ from conan.tools.cmake import cmake_layout, CMakeToolchain
 
 class ExampleRecipe(ConanFile):
     name = "thread-pool-sorter"
-    version = "0.0.0"
+    version = "1.0.0"
     description = "Linux 环境高级编程的课程作业。"
     languages = "C++"
     author = "DavidingPlus"
