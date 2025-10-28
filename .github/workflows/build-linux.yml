@@ -29,15 +29,13 @@ jobs:
 
         conan install . --build=missing
 
+        touch snippet/CachedFileOpsDemo/.buildme
+
         cmake --preset thread-pool-sorter-release
 
     - name: Build Targets
       working-directory: ${{github.workspace}}
-      run: |
-
-        touch snippet/CachedFileOpsDemo/.buildme
-
-        cmake --build --preset thread-pool-sorter-release
+      run: cmake --build --preset thread-pool-sorter-release
 
     - name: Run Targets
       working-directory: ${{github.workspace}}
