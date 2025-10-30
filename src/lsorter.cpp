@@ -9,6 +9,8 @@
 
 #include "lsorter.h"
 
+#include "lutil.h"
+
 #include <fstream>
 #include <iostream>
 #include <algorithm>
@@ -187,7 +189,7 @@ std::string LSorter::mergeKFiles(const std::vector<std::string> &filePaths, unsi
     }
 
     // 输出文件路径。
-    std::string outputFilePath = "tmp_merge_" + std::to_string(index) + ".bin";
+    std::string outputFilePath = LUtil::executableDirectory() + "tmp_merge_" + std::to_string(index) + ".bin";
     std::ofstream outputFiles(outputFilePath, std::ios::binary);
 
     // 堆归并。
