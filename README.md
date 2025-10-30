@@ -20,3 +20,34 @@ Linux 环境高级编程的课程作业。
 
 这样做的优点是 CPU 多线程利用，内存不会爆掉，块与块之间可并行处理。但缺点也很明显，磁盘 I/O，尤其是写入临时文件。
 
+# 构建流程
+
+## 环境准备
+
+```bash
+
+sudo apt install build-essential cmake
+
+# 若报错，https://www.yaolong.net/article/pip-externally-managed-environment/
+pip install conan==2.6.0
+
+conan profile detect
+
+```
+
+## 编译流程
+
+```bash
+
+# 在项目根目录跑
+
+conan install . -s "&:build_type=Debug" -s "build_type=Release" --build=missing
+
+cmake --preset thread-pool-sorter-debug
+
+cmake --build --preset thread-pool-sorter-debug
+
+./build/Debug/snippet/ThreadPoolSorterDemo/ThreadPoolSorterDemo
+
+```
+
