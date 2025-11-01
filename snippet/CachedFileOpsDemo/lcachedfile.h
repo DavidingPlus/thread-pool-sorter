@@ -10,6 +10,8 @@
 #ifndef _LCACHEDFILE_H_
 #define _LCACHEDFILE_H_
 
+#include "lglobalmacros.h"
+
 #include <string>
 
 #ifdef L_OS_LINUX
