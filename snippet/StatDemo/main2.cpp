@@ -20,35 +20,15 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <dirent.h>
 #endif
 
 
-int main(int argc, char const *argv[])
+void printStatInfo(const struct stat &statBuf, const std::string &fileName)
 {
-    if (argc < 2)
-    {
-        std::cout << "usage: " << argv[0] << " <filePath>" << std::endl;
-        return -1;
-    }
-
-
-#ifdef L_OS_LINUX
-
-    // 通过 stat() 函数获取文件的信息。
-    struct stat statbuf;
-
-    int res = stat(argv[1], &statbuf);
-    if (-1 == res)
-    {
-        perror("stat");
-
-
-        return EXIT_FAILURE;
-    }
-
     // 获取文件类型和文件权限 st_mode 变量。
     std::string perms; // 保存文件类型和权限的字符串。
-    mode_t mode = statbuf.st_mode;
+    mode_t mode = statBuf.st_mode;
 
     // 获得文件类型和掩码 -S_IFMT 相与。
     switch (mode & S_IFMT)
@@ -57,7 +37,7 @@ int main(int argc, char const *argv[])
             perms.append("s");
             break;
         case S_IFLNK:
-            perms.append("1");
+            perms.append("l");
             break;
         case S_IFREG:
             perms.append("-");
@@ -94,27 +74,93 @@ int main(int argc, char const *argv[])
     perms.append((mode & S_IXOTH) ? "x" : "-");
 
     // 获取硬连接数。
-    nlink_t linkNum = statbuf.st_nlink;
+    nlink_t linkNum = statBuf.st_nlink;
 
     // 文件所有者。
     // 这个函数可以通过用户 uid 获得用户名称。
-    std::string user = getpwuid(statbuf.st_uid)->pw_name;
+    std::string user = getpwuid(statBuf.st_uid)->pw_name;
 
     // 文件所在组。
     // 这个函数通过组 gid 获得名称。
-    std::string group = getgrgid(statbuf.st_gid)->gr_name;
+    std::string group = getgrgid(statBuf.st_gid)->gr_name;
 
     // 文件大小。
-    off_t size = statbuf.st_size;
+    off_t size = statBuf.st_size;
 
     // 获取修改时间。
     // ctime() 函数可以将时间差值转化为本地时间。
-    std::string mtime(ctime(&statbuf.st_mtime));
+    std::string mtime(ctime(&statBuf.st_mtime));
     // 这个时间格式化之后回车换行了，将其去掉。
     mtime.pop_back();
 
     // 输出。
-    std::cout << perms.c_str() << " " << linkNum << " " << user.c_str() << " " << group.c_str() << " " << size << " " << mtime.c_str() << " " << argv[1] << std::endl;
+    std::cout << perms.c_str() << " " << linkNum << " " << user.c_str() << " " << group.c_str() << " " << size << " " << mtime.c_str() << " " << fileName << std::endl;
+}
+
+
+int main(int argc, char const *argv[])
+{
+    if (argc < 2)
+    {
+        std::cout << "usage: " << argv[0] << " <filePath>" << std::endl;
+        return -1;
+    }
+
+
+#ifdef L_OS_LINUX
+
+    // 通过 stat() 函数获取文件的信息。
+    struct stat statBuf;
+
+    int res = stat(argv[1], &statBuf);
+    if (-1 == res)
+    {
+        perror("stat");
+
+
+        return EXIT_FAILURE;
+    }
+
+    // 如果是文件，直接输出信息。
+    if (S_ISREG(statBuf.st_mode))
+    {
+        printStatInfo(statBuf, argv[1]);
+    }
+    // 如果是目录，递归遍历当前目录的文件，并输出信息。
+    else if (S_ISDIR(statBuf.st_mode))
+    {
+        DIR *pDir = opendir(argv[1]);
+        if (!pDir)
+        {
+            perror("opendir");
+
+
+            return EXIT_FAILURE;
+        }
+
+        struct dirent *pDirent = nullptr;
+        while (pDirent = readdir(pDir))
+        {
+            std::string name(pDirent->d_name);
+
+            res = stat((std::string(argv[1]) + "/" + name).c_str(), &statBuf);
+            if (-1 == res)
+            {
+                perror("stat");
+
+
+                return EXIT_FAILURE;
+            }
+
+            printStatInfo(statBuf, name);
+        }
+    }
+    // 其他类型不支持。
+    else
+    {
+        std::cerr << "暂不支持除了普通文件和目录以外的其他类型。\n";
+    }
+
 
 #endif
 
