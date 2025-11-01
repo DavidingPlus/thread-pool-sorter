@@ -13,12 +13,16 @@
 #include <iostream>
 #include <cstring>
 
+#ifdef L_OS_LINUX
 #include <fcntl.h>
 #include <unistd.h>
+#endif
 
 
 int main()
 {
+#ifdef L_OS_LINUX
+
     const std::string filePath = LUtil::executableDirectory() + "test.txt";
     LCachedFile f;
 
@@ -47,6 +51,8 @@ int main()
     sleep(5);
 
     std::remove(filePath.c_str());
+
+#endif
 
 
     return 0;

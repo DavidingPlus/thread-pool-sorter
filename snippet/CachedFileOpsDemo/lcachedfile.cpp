@@ -13,10 +13,14 @@
 #include <stdexcept>
 #include <cstring>
 
+#ifdef L_OS_LINUX
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#endif
 
+
+#ifdef L_OS_LINUX
 
 void LCachedFile::open(const std::string &filePath, int flags, mode_t mode)
 {
@@ -118,3 +122,5 @@ off_t LCachedFile::lseek(off_t offset, int whence)
 
     return m_offset;
 }
+
+#endif

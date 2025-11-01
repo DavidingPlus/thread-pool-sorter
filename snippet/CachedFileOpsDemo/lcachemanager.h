@@ -18,7 +18,9 @@
 #include <list>
 #include <mutex>
 
+#ifdef L_OS_LINUX
 #include <sys/types.h>
+#endif
 
 
 /**
@@ -33,6 +35,8 @@
 class LCacheManager
 {
     L_CLASS_NONCOPYABLE(LCacheManager)
+
+#ifdef L_OS_LINUX
 
 public:
 
@@ -225,6 +229,8 @@ private:
      * @brief 互斥锁。用于线程保护。
      */
     std::mutex m_mutex;
+
+#endif
 };
 
 

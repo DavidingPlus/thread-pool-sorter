@@ -12,7 +12,9 @@
 
 #include <string>
 
+#ifdef L_OS_LINUX
 #include <sys/types.h>
+#endif
 
 
 /**
@@ -21,6 +23,8 @@
  */
 class LCachedFile
 {
+
+#ifdef L_OS_LINUX
 
 public:
 
@@ -95,6 +99,8 @@ private:
      * @brief 文件偏移量。
      */
     off_t m_offset = 0;
+
+#endif
 };
 
 

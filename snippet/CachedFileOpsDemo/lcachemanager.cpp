@@ -12,10 +12,14 @@
 #include <stdexcept>
 #include <algorithm>
 
+#ifdef L_OS_LINUX
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#endif
 
+
+#ifdef L_OS_LINUX
 
 LCacheManager::LCacheManager() : m_blockSize(4096), m_maxBlocks(1024), m_curBlocks(0)
 {
@@ -339,3 +343,5 @@ void LCacheManager::flushAll()
         flush(p.first);
     }
 }
+
+#endif

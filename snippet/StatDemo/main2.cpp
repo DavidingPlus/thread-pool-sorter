@@ -24,6 +24,8 @@
 #endif
 
 
+#ifdef L_OS_LINUX
+
 void printStatInfo(const struct stat &statBuf, const std::string &fileName)
 {
     // 获取文件类型和文件权限 st_mode 变量。
@@ -96,6 +98,8 @@ void printStatInfo(const struct stat &statBuf, const std::string &fileName)
     // 输出。
     std::cout << perms.c_str() << " " << linkNum << " " << user.c_str() << " " << group.c_str() << " " << size << " " << mtime.c_str() << " " << fileName << std::endl;
 }
+
+#endif
 
 
 int main(int argc, char const *argv[])

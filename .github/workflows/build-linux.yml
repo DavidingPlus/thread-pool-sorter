@@ -45,6 +45,8 @@ jobs:
 
         ./build/Release/snippet/StatDemo/StatDemo2 ./snippet/StatDemo/test.txt
 
+        ./build/Release/snippet/StatDemo/StatDemo2 ./
+
         ./build/Release/snippet/ThreadPoolSorterDemo/ThreadPoolSorterDemo
 
         ./build/Release/snippet/CachedFileOpsDemo/CachedFileOpsDemo
